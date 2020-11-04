@@ -1,0 +1,56 @@
+{
+  "id": "33284ec4-3c8b-43d9-902d-1ae8c4b331b0",
+  "name": "Default Welcome Intent",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "input.welcome",
+      "affectedContexts": [],
+      "parameters": [],
+      "messages": [
+        {
+          "type": "2",
+          "platform": "facebook",
+          "title": "Selecione uma das categorias para saber noticias relacionadas.",
+          "replies": [
+            "Esportes",
+            "Política",
+            "Entretenimento",
+            "Famosos"
+          ],
+          "textToSpeech": "",
+          "lang": "pt-br",
+          "condition": ""
+        },
+        {
+          "type": "0",
+          "title": "",
+          "textToSpeech": "",
+          "lang": "pt-br",
+          "speech": [
+            "Olá! Me chamo Casper, seu assistente virtual e estou aqui para lhe ajudar no que eu puder!"
+          ],
+          "condition": ""
+        }
+      ],
+      "defaultResponsePlatforms": {
+        "facebook": true
+      },
+      "speech": []
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": false,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": [
+    {
+      "name": "WELCOME"
+    }
+  ],
+  "conditionalResponses": [],
+  "condition": "",
+  "conditionalFollowupEvents": []
+}
