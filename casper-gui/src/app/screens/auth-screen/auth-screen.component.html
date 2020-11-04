@@ -1,0 +1,12 @@
+<div class="container">
+  <h1>Sistema de Gerência <strong>Casper</strong></h1>
+  <div class="login-container">
+   <div class="login-input">
+    <mat-form-field class="example-form-field">
+      <mat-label>Digite o PIN de segurança</mat-label>
+      <input matInput type="password" [(ngModel)]="pin">
+    </mat-form-field>
+   </div>
+   <button (click)="btnClick()" mat-raised-button color="primary" style="width: 40%;">Entrar</button>
+  </div>
+</div>

@@ -1,0 +1,60 @@
+<h2 style="text-align: center;">
+  Cadastre sua noticia
+</h2>
+
+<div style="display:flex; justify-content: center;">
+  <mat-form-field appearance="fill">
+    <mat-label>Tema</mat-label>
+    <mat-select [(value)]="tema">
+      <mat-option value="esportes">Esportes</mat-option>
+      <mat-option value="politica">Política</mat-option>
+      <mat-option value="entretenimento">Entretenimento</mat-option>
+      <mat-option value="famosos">Famosos</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<div>
+
+<mat-form-field style="margin-right: 10px;">
+  <mat-label>Link Noticia</mat-label>
+  <input matInput maxlength="256" type="text" [(ngModel)]="linkNoticia">
+  <mat-hint align="start"><strong>Encurtadores podem ajudar</strong> </mat-hint>
+  <mat-hint align="end">{{linkNoticia.length}} / 256</mat-hint>
+</mat-form-field>
+
+<mat-form-field>
+  <mat-label>Link Imagem Noticia</mat-label>
+  <input matInput maxlength="256" [(ngModel)]="imgUrl">
+  <mat-hint align="start"><strong>Encurtadores podem ajudar</strong> </mat-hint>
+  <mat-hint align="end">{{imgUrl.length}} / 256</mat-hint>
+</mat-form-field>
+
+</div>
+
+<div style="margin-top: 20px;">
+<mat-form-field style="margin-right: 10px;">
+  <mat-label>Título</mat-label>
+  <input matInput maxlength="256" [(ngModel)]="titulo">
+  <mat-hint align="end">{{titulo.length}} / 256</mat-hint>
+</mat-form-field>
+
+
+<mat-form-field>
+  <mat-label>Descrição</mat-label>
+  <input matInput maxlength="256" [(ngModel)]="descricao">
+  <mat-hint align="end">{{descricao.length}} / 256</mat-hint>
+</mat-form-field>
+</div>
+
+<div class="dialog-buttons" style="margin-top: 10px; display: flex; justify-content: space-between;">
+  <button mat-button color="accent" style="margin-right: 10px;" (click)="onCancelClick()">
+    <p>Cancelar</p>
+  </button>
+  <button *ngIf="checkValues()" mat-button color = "primary" (click)="onClick()">
+    <p>Confirmar</p>
+  </button>
+  <div *ngIf="!checkValues()">
+    <p><strong style="color: red;">*Preencha todos os campos*</strong></p>
+  </div>
+</div>

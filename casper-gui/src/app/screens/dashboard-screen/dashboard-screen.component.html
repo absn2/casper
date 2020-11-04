@@ -1,0 +1,107 @@
+<div class="container">
+  <div class = "header-container">
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Filtrar por tema</mat-label>
+        <mat-select (selectionChange)="filterNoticia()" [(value)]="filter">
+          <mat-option value="all">Todos</mat-option>
+          <mat-option value="esportes">Esportes</mat-option>
+          <mat-option value="politica">Política</mat-option>
+          <mat-option value="entretenimento">Entretenimento</mat-option>
+          <mat-option value="famosos">Famosos</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div style="padding-bottom: 1.37em;">
+      <button mat-raised-button color = "accent" class="logout-button" (click)="quit()"><mat-icon>keyboard_arrow_right</mat-icon>Sair</button>
+    </div>
+  </div>
+  
+  <div class="table-container">
+   <div class="table-container-title">
+     <ul class="table-title">
+      <div class = "title"><p>Link Noticia</p></div>
+      <div class = "title"><p>Link Imagem</p></div>
+      <div class = "title"><p>Título</p></div>
+      <div class = "title"><p>Descrição</p></div>
+      <div class = "title"><p>Tema</p></div>
+      <div class = "title"><p>Editar</p></div>
+      <div class = "title"><p>Excluir</p></div>
+     </ul>
+    </div>
+    <div *ngIf = "!busy">
+      <div *ngIf = "noticiasFilter.length == 0" style="text-align: center;"><h1>Sem Noticias cadastradas</h1></div>
+      <div *ngFor = "let entrie of noticiasFilter" >
+        <div class = "table-entries">
+          <div class="table-entrie-component">
+            <div class="table-text">
+              <a target ="_blank" href={{entrie.link}}>{{entrie.link}}</a>
+            </div>
+          </div>
+          <div class="table-entrie-component">
+            <div *ngIf="entrie.edit" class="table-text">
+              <mat-form-field style="margin-right: 10px;">
+                <mat-label>Link Imagem</mat-label>
+                <input matInput maxlength="256" [(ngModel)]="entrie.imageurl">
+                <mat-hint align="end">{{entrie.imageurl.length}} / 256</mat-hint>
+              </mat-form-field>
+            </div>
+            <div *ngIf="!entrie.edit" class="table-text">
+              <a target ="_blank" href={{entrie.imageurl}}>{{entrie.imageurl}}</a>
+            </div>
+          </div>
+          <div class="table-entrie-component">
+            <div *ngIf="entrie.edit" class="table-text">
+              <mat-form-field style="margin-right: 10px;">
+                <mat-label>Título</mat-label>
+                <input matInput maxlength="256" [(ngModel)]="entrie.titulo">
+                <mat-hint align="end">{{entrie.titulo.length}} / 256</mat-hint>
+              </mat-form-field>
+            </div>
+            <div *ngIf="!entrie.edit" class="table-text">
+              {{entrie.titulo}}
+            </div>
+          </div>
+          <div class="table-entrie-component">
+            <div *ngIf="entrie.edit" class="table-text">
+              <mat-form-field style="margin-right: 10px;">
+                <mat-label>Descrição</mat-label>
+                <input matInput maxlength="256" [(ngModel)]="entrie.descricao">
+                <mat-hint align="end">{{entrie.descricao.length}} / 256</mat-hint>
+              </mat-form-field>
+            </div>
+            <div *ngIf="!entrie.edit" class="table-text">
+              {{entrie.descricao}}
+            </div>
+          </div>
+          <div class="table-entrie-component">
+            <div *ngIf="entrie.edit" class="table-text">
+              <mat-form-field appearance="fill">
+                <mat-label>Tema</mat-label>
+                <mat-select [(value)]="entrie.tema">
+                  <mat-option value="esportes">Esportes</mat-option>
+                  <mat-option value="politica">Política</mat-option>
+                  <mat-option value="entretenimento">Entretenimento</mat-option>
+                  <mat-option value="famosos">Famosos</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div *ngIf="!entrie.edit" class="table-text">
+              {{entrie.tema.toUpperCase()}}
+            </div>
+          </div>
+          <div *ngIf="!entrie.edit && !loading" class="table-entrie-component"><button mat-button (click)="entrie.edit = !entrie.edit"><mat-icon>update</mat-icon></button></div>
+          <div *ngIf="entrie.edit && !loading" class="table-entrie-component"><button mat-button (click)="entrie.edit = continueEditing(entrie)"><mat-icon>done</mat-icon></button></div>
+          <div *ngIf="!loading" class="table-entrie-component"><button mat-button (click)="deleteNoticia(entrie.link)"><mat-icon>delete</mat-icon></button></div>
+        </div>
+        <div class="table-divider"></div>
+
+      </div>
+    </div>
+    <div *ngIf="busy" style="margin: 0 auto;"><mat-spinner style="margin-top: 10px;"></mat-spinner></div>
+    <button mat-fab color="primary" class="fab-button" (click)="openDialog()">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+</div>
+
