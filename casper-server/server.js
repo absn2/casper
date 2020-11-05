@@ -1,8 +1,16 @@
 const express = require("express")
 const app = express()
 const bodyParser = require('body-parser')
-const mysql = require('mysql')
 const func = require('./function.js')
+const mongoose = require('mongoose')
+const Noticia = require('./models/noticias.js')
+
+mongoose.connect(process.env.MongooseLink,
+                {
+                  useUnifiedTopology: true,
+                  useNewUrlParser: true
+                })
+
 
 var cors = require('cors');
 var corsOptions = {
@@ -30,151 +38,118 @@ app.post("/casper", (request, response) => {
   if (intentName == 'Esportes' || intentName == 'Politica' || 
       intentName == 'Entretenimento' || intentName == 'Famosos') {
     
-      var connection = mysql.createConnection({
-        host     : process.env.MYSQL_HOST,
-        user     : process.env.MYSQL_USER,
-        password : process.env.MYSQL_PASS,
-        database : process.env.MYSQL_DB  
-      });
-
-      connection.connect(); 
-      var query = 'select * from noticias'
-
-      connection.query(query, function(error, results, fields) {
-        if (error) throw error;
-        connection.end()
-        results = func.filterMap(results,intentName.toLowerCase())
-        if (results.length == 0) {
-          let res = func.semNoticia()
-          response.json(res)
-        } else {
-          let res = func.carousel(results)
-          response.json(res)        
-        }
-      })    
+      Noticia.find({}).exec()
+        .then(doc => {
+          doc = func.filterMap(doc,intentName.toLowerCase())
+          if (doc.length == 0) {
+            let res = func.semNoticia()
+            response.json(res)
+          } else {
+            let res = func.carousel(doc)
+            response.json(res)        
+          }
+      })
+      .catch(err => {
+        response.status(500).json({error : err})
+      })
     }
 });
 
-app.get("/noticias", (request, response) => {
-    var connection = mysql.createConnection({
-      host     : process.env.MYSQL_HOST,
-      user     : process.env.MYSQL_USER,
-      password : process.env.MYSQL_PASS,
-      database : process.env.MYSQL_DB  
-    });
+app.get('/noticias', (req,res) => {
   
-    connection.connect(); 
-    var query = "select * from noticias"
-  
-    connection.query(query, function(error, results, fields) {
-      if (error) throw error;
-      connection.end()
-      response.send(results)
+  Noticia.find({}).exec()
+    .then(doc => {
+      res.status(201).send(doc)
     })
-});
-
-app.post("/noticias", (request, response) => {
-  
-    let {tema,link,imageurl,descricao,titulo} = request.body;
-  
-    var connection = mysql.createConnection({
-      host     : process.env.MYSQL_HOST,
-      user     : process.env.MYSQL_USER,
-      password : process.env.MYSQL_PASS,
-      database : process.env.MYSQL_DB  
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        error: err
+      });
     });
+})
+
+app.post('/noticias', (req,res) => {
   
-    connection.connect(); 
-    
-    var querySelect = 'select * from noticias'
+  const noticia = new Noticia({
+    _id: new mongoose.Types.ObjectId(),
+    link: req.body.link,
+    imageurl: req.body.imageurl,
+    titulo: req.body.titulo,
+    descricao: req.body.descricao,
+    tema: req.body.tema,
+  })
   
-    connection.query(querySelect, function(error, results, fields) {
-      if (error) {
-        console.log(error)
-        response.status(404).send("Oh uh, something went wrong")
-      } else {
-        let checkRepeat = results.filter(el => el['link'] == link)
-        if (checkRepeat.length > 0) response.status(404).send("Noticia já cadastrada no sistema!");
+  Noticia.find({}).exec()
+    .then(doc => {
+      let checkRepeat = doc.filter(el => el['link'] == req.body.link)
+      if (checkRepeat.length > 0) res.status(404).send("Noticia já cadastrada no sistema!");
+      else {
+        doc = doc.filter(el => el['tema'] == req.body.tema)
+        if (doc.length == 10) res.status(404).send("Limite de 10 notícias por tema antigido!");
         else {
-          results = results.filter(el => el['tema'] == tema)
-          if (results.length == 10) response.status(404).send("Limite de 10 notícias por tema antigido!");
-          else {
-            var query = 
-              "insert into noticias values ('"+link+"','"+titulo+"','"+imageurl+"','"+tema+"','"+descricao+"')"
-            connection.query(query, function(error, results, fields) {
-               if (error) console.log(error), response.status(404).send("Oh uh, something went wrong");
-              connection.end()
-              response.send(results)
-            }) 
-          }
+          noticia
+            .save()
+            .then(result => {
+              console.log(result);
+              res.status(201).json({
+                message: "Handling POST requests to /products",
+                createdProduct: result
+              });
+          })
         }
+      }    
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        error: err
+      });
+    });
+})
+
+app.put("/noticias", (req, res) =>{
+  
+  let {tema,link,imageurl,descricao,titulo} = req.body;
+  
+  const noticia = {
+    link: link,
+    tema: tema,
+    imageurl: imageurl,
+    descricao: descricao,
+    titulo: titulo
+  }
+  
+  Noticia.find({}).exec()
+    .then(doc => {
+      doc = doc.filter(el => el['tema'] == tema);
+      let verify = doc.filter(el => el['link'] == link);
+      if (verify.length == 0 && doc.length == 10) res.status(404).send("Limite de 10 notícias por tema antigido!");
+      else {
+        Noticia.replaceOne({"link": link}, noticia).exec()
+          .then(doc => {
+            console.log("bora ver né")
+            res.status(200).send(doc)
+        })
       }
     })
-});
-
-app.put("/noticias", (request, response) => {
-  
-    let {tema,link,imageurl,descricao,titulo} = request.body;
-  
-    var connection = mysql.createConnection({
-      host     : process.env.MYSQL_HOST,
-      user     : process.env.MYSQL_USER,
-      password : process.env.MYSQL_PASS,
-      database : process.env.MYSQL_DB  
-    });
-  
-    connection.connect(); 
-    
-  
-    var queryUpdate = 
-    'UPDATE noticias SET tema = "'+tema+'", imageurl = "'+imageurl+'", descricao = "'+descricao+'", titulo = "'+titulo+'" WHERE link = "'+link+'"'
-    
-    console.log(queryUpdate)
-    
-    var querySelect = 'select * from noticias'
-  
-    connection.query(querySelect, function(error, results, fields) {
-      if (error) {
-        console.log(error)
-        response.status(404).send("Oh uh, something went wrong")
-      } else {
-          results = results.filter(el => el['tema'] == tema)
-          let verify = results.filter(el => el['link'] == link)
-          if (results.length == 10 && verify.length == 0) response.status(404).send("Limite de 10 notícias por tema antigido!");
-          else {
-            connection.query(queryUpdate, function(error, results, fields) {
-              if (error) response.status(404).send("Oh uh, something went wrong");
-              connection.end()
-              response.send(results)
-            }) 
-          }
-      }
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({error: err})
     })
-});
+})
 
-app.delete("/noticias", (request, response) => {
-  
-    var id = request.query.id
-    
-    var connection = mysql.createConnection({
-      host     : process.env.MYSQL_HOST,
-      user     : process.env.MYSQL_USER,
-      password : process.env.MYSQL_PASS,
-      database : process.env.MYSQL_DB  
-    });
-  
-    connection.connect(); 
-  
-    var query = 
-        'DELETE FROM noticias WHERE link = "'+id+'"'
-    console.log(query)
-    connection.query(query, function(error, results, fields) {
-      if (error) response.status(404).send("Algo deu errado no servidor! Tente novamente mais tarde.");
-      connection.end()
-      response.send(results)
+app.delete('/noticias', (req,res) => {
+  console.log(req.query.id)
+  Noticia.remove({ "link" : req.query.id}).exec()
+    .then(result => {
+      res.status(200).json(result);
     })
-});
-
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({error : err})
+    })
+})
 
 
 
